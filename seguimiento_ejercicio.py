@@ -24,9 +24,9 @@ class DatabaseConnection:
 # Clase para manejar usuarios, hereda de DatabaseConnection
 class User(DatabaseConnection):
     def registrar(self, username, password):
-        db = self.conectar()  # Uso del método de la clase base
+        db = self.conectar()  
         if db is None:
-            return  # Salir si no se pudo conectar
+            return  
 
         cursor = db.cursor()
         try:
@@ -40,9 +40,9 @@ class User(DatabaseConnection):
             db.close()
 
     def iniciar_sesion(self, username, password):
-        db = self.conectar()  # Uso del método de la clase base
+        db = self.conectar()  
         if db is None:
-            return None  # Salir si no se pudo conectar
+            return None  
 
         cursor = db.cursor()
         cursor.execute("SELECT * FROM login_user WHERE username = %s AND password = %s", (username, password))
@@ -54,22 +54,29 @@ class User(DatabaseConnection):
 # Clase para manejar ejercicios, hereda de DatabaseConnection
 class Exercise(DatabaseConnection):
     def obtener_tipos(self):
-        db = self.conectar()  # Uso del método de la clase base
+        db = self.conectar()  
         if db is None:
-            return []  # Salir si no se pudo conectar
+            print("No se pudo conectar a la base de datos.")
+            return []  
 
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM tipos_ejercicio")
-        tipos = cursor.fetchall()
-        cursor.close()
-        db.close()
+        try:
+            cursor.execute("SELECT * FROM tipos_ejercicio")
+            tipos = cursor.fetchall()
+            print(f"Tipos obtenidos: {tipos}")  # Mensaje de depuración
+        except mysql.connector.Error as err:
+            print(f"Error al obtener tipos: {err}")
+            tipos = []
+        finally:
+            cursor.close()
+            db.close()
         
         return tipos
 
     def registrar(self, usuario_id, tipo_ejercicio_id, duracion):
-        db = self.conectar()  # Uso del método de la clase base
+        db = self.conectar()  
         if db is None:
-            return  # Salir si no se pudo conectar
+            return  
 
         cursor = db.cursor()
 
@@ -84,9 +91,9 @@ class Exercise(DatabaseConnection):
         db.close()
 
     def obtener_seguimiento(self, usuario_id):
-        db = self.conectar()  # Uso del método de la clase base
+        db = self.conectar()  
         if db is None:
-            return []  # Salir si no se pudo conectar
+            return []  
 
         cursor = db.cursor()
         
@@ -102,8 +109,8 @@ class Exercise(DatabaseConnection):
 
 # Interfaz de usuario
 def main():
-    user_manager = User()  # Instancia de User
-    exercise_manager = Exercise()  # Instancia de Exercise
+    user_manager = User()  
+    exercise_manager = Exercise()  
 
     while True:
         print("1. Registrarse")
@@ -133,14 +140,17 @@ def main():
                     if sub_opcion == "1":
                         # Mostrar tipos de ejercicio disponibles
                         tipos_ejercicio = exercise_manager.obtener_tipos()
-                        print("\nTipos de ejercicio disponibles:")
-                        for tipo in tipos_ejercicio:
-                            print(f"{tipo[0]}. {tipo[1]}")  # tipo[0] es el ID y tipo[1] es el nombre
+                        if not tipos_ejercicio:
+                            print("No hay tipos de ejercicio disponibles.")
+                        else:
+                            print("\nTipos de ejercicio disponibles:")
+                            for tipo in tipos_ejercicio:
+                                print(f"{tipo[0]}. {tipo[1]}")  # tipo[0] es el ID y tipo[1] es el nombre
                         
-                        tipo_ejercicio_id = int(input("Seleccione el ID del tipo de ejercicio: "))
-                        duracion = int(input("Ingrese la duración en minutos: "))
-                        exercise_manager.registrar(usuario[0], tipo_ejercicio_id, duracion)
-                        print("Ejercicio registrado.")
+                            tipo_ejercicio_id = int(input("Seleccione el ID del tipo de ejercicio: "))
+                            duracion = int(input("Ingrese la duración en minutos: "))
+                            exercise_manager.registrar(usuario[0], tipo_ejercicio_id, duracion)
+                            print("Ejercicio registrado.")
                     
                     elif sub_opcion == "2":
                         seguimiento = exercise_manager.obtener_seguimiento(usuario[0])
@@ -150,9 +160,7 @@ def main():
                     
                     elif sub_opcion == "3":
                         print("Cerrando sesión...")
-                        print("---sesión cerrada---")
                         break
-                        
                     
                     else:
                         print("Opción no válida.")
@@ -162,7 +170,6 @@ def main():
         
         elif opcion == "3":
             print("Saliendo...") 
-            print("saliste")
             break
             
 
